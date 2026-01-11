@@ -1,7 +1,15 @@
 // PWA Home Dashboard - Main Application
 
-// Default sample apps (empty - user adds their own)
-const defaultApps = [];
+// Default sample apps
+const defaultApps = [
+    {
+        id: '1',
+        name: 'Money',
+        url: 'https://kumudgupta76.github.io/money/',
+        icon: '💰',
+        color: '#4caf50'
+    }
+];
 
 // App State
 let apps = [];

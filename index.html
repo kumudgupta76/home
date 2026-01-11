@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="PWA Home - Your central hub for web applications">
+    <meta name="theme-color" content="#667eea">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- iOS Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PWA Home">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    
+    <title>PWA Home</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <h1>🏠 My Apps</h1>
+            <p class="subtitle">Your personal app dashboard</p>
+        </div>
+        <button id="installBtn" class="install-btn" hidden>
+            <span>📲</span> Install App
+        </button>
+    </header>
+
+    <main class="main-content">
+        <section class="search-section">
+            <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search apps...">
+        </section>
+
+        <section class="apps-section">
+            <h2 class="section-title">Applications</h2>
+            <div id="appsGrid" class="apps-grid">
+                <!-- Apps will be dynamically loaded here -->
+            </div>
+        </section>
+
+        <section class="add-app-section">
+            <button id="addAppBtn" class="add-app-btn">
+                <span class="plus-icon">+</span>
+                <span>Add New App</span>
+            </button>
+        </section>
+    </main>
+
+    <!-- Add App Modal -->
+    <div id="addAppModal" class="modal" hidden>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New App</h2>
+                <button id="closeModalBtn" class="close-btn">&times;</button>
+            </div>
+            <form id="addAppForm" class="add-app-form">
+                <div class="form-group">
+                    <label for="appName">App Name</label>
+                    <input type="text" id="appName" required placeholder="e.g., Gmail">
+                </div>
+                <div class="form-group">
+                    <label for="appUrl">App URL</label>
+                    <input type="url" id="appUrl" required placeholder="https://example.com">
+                </div>
+                <div class="form-group">
+                    <label for="appIcon">Icon (emoji or URL)</label>
+                    <input type="text" id="appIcon" placeholder="📧 or https://...">
+                </div>
+                <div class="form-group">
+                    <label for="appColor">Tile Color</label>
+                    <input type="color" id="appColor" value="#667eea">
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add App</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit App Modal -->
+    <div id="editAppModal" class="modal" hidden>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit App</h2>
+                <button id="closeEditModalBtn" class="close-btn">&times;</button>
+            </div>
+            <form id="editAppForm" class="add-app-form">
+                <input type="hidden" id="editAppId">
+                <div class="form-group">
+                    <label for="editAppName">App Name</label>
+                    <input type="text" id="editAppName" required placeholder="e.g., Gmail">
+                </div>
+                <div class="form-group">
+                    <label for="editAppUrl">App URL</label>
+                    <input type="url" id="editAppUrl" required placeholder="https://example.com">
+                </div>
+                <div class="form-group">
+                    <label for="editAppIcon">Icon (emoji or URL)</label>
+                    <input type="text" id="editAppIcon" placeholder="📧 or https://...">
+                </div>
+                <div class="form-group">
+                    <label for="editAppColor">Tile Color</label>
+                    <input type="color" id="editAppColor" value="#667eea">
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="deleteAppBtn" class="btn btn-danger">Delete</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>PWA Home Dashboard • <span id="connectionStatus">🟢 Online</span></p>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

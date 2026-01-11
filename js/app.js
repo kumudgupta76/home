@@ -116,7 +116,8 @@ function createAppCard(app) {
         ? `<img src="${escapeHtml(app.icon)}" alt="${escapeHtml(app.name)}" onerror="this.parentElement.innerHTML='📱'">`
         : escapeHtml(app.icon) || '📱';
     
-    const displayUrl = new URL(app.url).hostname;
+    const displayUrl = getDisplayUrl(app.url);
+    const fullUrl = new URL(app.url).href;
     
     return `
         <div class="app-card" 
@@ -124,6 +125,7 @@ function createAppCard(app) {
            data-name="${escapeHtml(app.name)}"
            role="button"
            tabindex="0"
+           title="${escapeHtml(fullUrl)}"
            style="--app-color: ${escapeHtml(app.color)}">
             <button class="edit-btn" data-id="${escapeHtml(app.id)}" title="Edit app">⚙️</button>
             <div class="app-icon" style="background: ${escapeHtml(app.color)}">
@@ -131,6 +133,7 @@ function createAppCard(app) {
             </div>
             <span class="app-name">${escapeHtml(app.name)}</span>
             <span class="app-url">${escapeHtml(displayUrl)}</span>
+            <span class="app-full-url">${escapeHtml(fullUrl)}</span>
         </div>
     `;
 }
@@ -143,6 +146,27 @@ function isUrl(string) {
         return string.startsWith('http://') || string.startsWith('https://');
     } catch {
         return false;
+    }
+}
+
+// Get a meaningful display URL
+function getDisplayUrl(urlString) {
+    try {
+        const url = new URL(urlString);
+        const hostname = url.hostname;
+        
+        // For GitHub Pages or similar, show the path instead
+        if (hostname.endsWith('.github.io') || hostname.endsWith('.netlify.app') || hostname.endsWith('.vercel.app')) {
+            const pathParts = url.pathname.split('/').filter(p => p);
+            if (pathParts.length > 0) {
+                return pathParts[0]; // Return first path segment (repo name)
+            }
+        }
+        
+        // For regular domains, remove www. prefix
+        return hostname.replace(/^www\./, '');
+    } catch {
+        return urlString;
     }
 }
 
@@ -164,6 +188,12 @@ function setupEventListeners() {
     closeModalBtn.addEventListener('click', closeAddModal);
     cancelBtn.addEventListener('click', closeAddModal);
     addAppForm.addEventListener('submit', handleAddApp);
+    
+    // Fetch metadata button
+    const fetchMetaBtn = document.getElementById('fetchMetaBtn');
+    if (fetchMetaBtn) {
+        fetchMetaBtn.addEventListener('click', handleFetchMetadata);
+    }
     
     // Edit App Modal
     closeEditModalBtn.addEventListener('click', closeEditModal);
@@ -249,6 +279,85 @@ function closeEditModal() {
     editAppForm.reset();
 }
 
+// Fetch site metadata (icon and title)
+async function fetchSiteMetadata(url) {
+    try {
+        // Get favicon using Google's service
+        const faviconUrl = `https://www.google.com/s2/favicons?sz=64&domain_url=${encodeURIComponent(url)}`;
+        
+        // Try to fetch title using a CORS proxy
+        let title = '';
+        try {
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+            const response = await fetch(proxyUrl);
+            const data = await response.json();
+            
+            if (data.contents) {
+                // Parse title from HTML
+                const titleMatch = data.contents.match(/<title[^>]*>([^<]+)<\/title>/i);
+                if (titleMatch) {
+                    title = titleMatch[1].trim();
+                }
+                
+                // Try to get a better icon from meta tags
+                const ogImageMatch = data.contents.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
+                    || data.contents.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
+                
+                const appleTouchIcon = data.contents.match(/<link[^>]*rel=["']apple-touch-icon["'][^>]*href=["']([^"']+)["']/i)
+                    || data.contents.match(/<link[^>]*href=["']([^"']+)["'][^>]*rel=["']apple-touch-icon["']/i);
+                
+                if (appleTouchIcon && appleTouchIcon[1]) {
+                    const iconPath = appleTouchIcon[1];
+                    const baseUrl = new URL(url);
+                    return {
+                        icon: iconPath.startsWith('http') ? iconPath : `${baseUrl.origin}${iconPath.startsWith('/') ? '' : '/'}${iconPath}`,
+                        title
+                    };
+                }
+            }
+        } catch (e) {
+            console.log('Could not fetch page metadata, using favicon only');
+        }
+        
+        return { icon: faviconUrl, title };
+    } catch (error) {
+        console.error('Error fetching metadata:', error);
+        return { icon: '', title: '' };
+    }
+}
+
+// Handle fetch metadata button click
+async function handleFetchMetadata() {
+    const urlInput = document.getElementById('appUrl');
+    const nameInput = document.getElementById('appName');
+    const iconInput = document.getElementById('appIcon');
+    const fetchBtn = document.getElementById('fetchMetaBtn');
+    
+    const url = urlInput.value.trim();
+    if (!url) {
+        alert('Please enter a URL first');
+        return;
+    }
+    
+    // Show loading state
+    fetchBtn.textContent = '⏳';
+    fetchBtn.disabled = true;
+    
+    try {
+        const metadata = await fetchSiteMetadata(url);
+        
+        if (metadata.icon && !iconInput.value) {
+            iconInput.value = metadata.icon;
+        }
+        if (metadata.title && !nameInput.value) {
+            nameInput.value = metadata.title;
+        }
+    } finally {
+        fetchBtn.textContent = '🔍';
+        fetchBtn.disabled = false;
+    }
+}
+
 // Add new app
 function handleAddApp(e) {
     e.preventDefault();
@@ -317,7 +426,20 @@ async function registerServiceWorker() {
 // PWA Install Prompt
 let deferredPrompt;
 
+// Check if app is running as installed PWA
+function isInstalledPWA() {
+    return window.matchMedia('(display-mode: standalone)').matches 
+        || window.navigator.standalone === true
+        || document.referrer.includes('android-app://');
+}
+
 function setupInstallPrompt() {
+    // Don't show install button if already installed
+    if (isInstalledPWA()) {
+        installBtn.hidden = true;
+        return;
+    }
+    
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;

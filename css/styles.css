@@ -183,8 +183,19 @@ body {
 }
 
 .app-url {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+    font-weight: 500;
+}
+
+.app-full-url {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+    opacity: 0.7;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -333,11 +344,47 @@ body {
     border-radius: 8px;
     font-size: 1rem;
     transition: var(--transition);
+    box-sizing: border-box;
 }
 
 .form-group input:focus {
     outline: none;
     border-color: var(--primary-color);
+}
+
+.input-with-btn {
+    display: flex;
+    gap: 0.5rem;
+    align-items: stretch;
+}
+
+.input-with-btn input {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
+}
+
+.btn-fetch {
+    flex: 0 0 auto;
+    padding: 0.75rem 1rem;
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: var(--transition);
+    width: auto;
+    max-width: 50px;
+}
+
+.btn-fetch:hover {
+    opacity: 0.9;
+}
+
+.btn-fetch:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .form-group input[type="color"] {
@@ -453,6 +500,38 @@ body {
 
     .btn {
         width: 100%;
+    }
+    
+    .input-with-btn {
+        flex-direction: row;
+        display: flex;
+    }
+    
+    .input-with-btn input {
+        flex: 1 1 auto;
+        min-width: 0;
+        width: 100%;
+    }
+    
+    .btn-fetch {
+        flex: 0 0 auto;
+        padding: 0.75rem;
+        min-width: 44px;
+        max-width: 50px;
+    }
+    
+    .modal-content {
+        margin: 0.5rem;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    
+    .add-app-form {
+        padding: 1rem;
+    }
+    
+    .form-group input {
+        font-size: 16px; /* Prevents zoom on iOS */
     }
 }
 

@@ -60,12 +60,15 @@
             </div>
             <form id="addAppForm" class="add-app-form">
                 <div class="form-group">
-                    <label for="appName">App Name</label>
-                    <input type="text" id="appName" required placeholder="e.g., Gmail">
+                    <label for="appUrl">App URL</label>
+                    <div class="input-with-btn">
+                        <input type="url" id="appUrl" required placeholder="https://example.com">
+                        <button type="button" id="fetchMetaBtn" class="btn btn-fetch" title="Fetch icon & title from URL">🔍</button>
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label for="appUrl">App URL</label>
-                    <input type="url" id="appUrl" required placeholder="https://example.com">
+                    <label for="appName">App Name</label>
+                    <input type="text" id="appName" required placeholder="e.g., Gmail">
                 </div>
                 <div class="form-group">
                     <label for="appIcon">Icon (emoji or URL)</label>

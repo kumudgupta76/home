@@ -120,6 +120,20 @@
         <p>PWA Home Dashboard • <span id="connectionStatus">🟢 Online</span></p>
     </footer>
 
+    <!-- App Viewer -->
+    <div id="appViewer" class="app-viewer" hidden>
+        <div class="viewer-header">
+            <button id="backBtn" class="viewer-back-btn">
+                <span>←</span> Back
+            </button>
+            <span id="viewerTitle" class="viewer-title">App</span>
+            <a id="openExternalBtn" class="viewer-external-btn" href="#" target="_blank" rel="noopener noreferrer" title="Open in browser">
+                ↗
+            </a>
+        </div>
+        <iframe id="appFrame" class="app-frame" sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals allow-downloads"></iframe>
+    </div>
+
     <script src="js/app.js"></script>
 </body>
 </html>

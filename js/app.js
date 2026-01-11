@@ -1,50 +1,7 @@
 // PWA Home Dashboard - Main Application
 
-// Default sample apps
-const defaultApps = [
-    {
-        id: '1',
-        name: 'Gmail',
-        url: 'https://mail.google.com',
-        icon: '📧',
-        color: '#ea4335'
-    },
-    {
-        id: '2',
-        name: 'GitHub',
-        url: 'https://github.com',
-        icon: '🐙',
-        color: '#24292e'
-    },
-    {
-        id: '3',
-        name: 'YouTube',
-        url: 'https://youtube.com',
-        icon: '▶️',
-        color: '#ff0000'
-    },
-    {
-        id: '4',
-        name: 'Google Drive',
-        url: 'https://drive.google.com',
-        icon: '📁',
-        color: '#4285f4'
-    },
-    {
-        id: '5',
-        name: 'Calendar',
-        url: 'https://calendar.google.com',
-        icon: '📅',
-        color: '#34a853'
-    },
-    {
-        id: '6',
-        name: 'Notion',
-        url: 'https://notion.so',
-        icon: '📝',
-        color: '#000000'
-    }
-];
+// Default sample apps (empty - user adds their own)
+const defaultApps = [];
 
 // App State
 let apps = [];
@@ -121,6 +78,28 @@ function renderApps(filteredApps = null) {
             openEditModal(appId);
         });
     });
+    
+    // Add click event listeners for app cards
+    document.querySelectorAll('.app-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+            // Don't open if clicking edit button
+            if (e.target.closest('.edit-btn')) return;
+            
+            const url = card.dataset.url;
+            const name = card.dataset.name;
+            openAppViewer(url, name);
+        });
+        
+        // Allow keyboard activation
+        card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                const url = card.dataset.url;
+                const name = card.dataset.name;
+                openAppViewer(url, name);
+            }
+        });
+    });
 }
 
 // Create app card HTML
@@ -132,10 +111,11 @@ function createAppCard(app) {
     const displayUrl = new URL(app.url).hostname;
     
     return `
-        <a href="${escapeHtml(app.url)}" 
-           class="app-card" 
-           target="_blank" 
-           rel="noopener noreferrer"
+        <div class="app-card" 
+           data-url="${escapeHtml(app.url)}"
+           data-name="${escapeHtml(app.name)}"
+           role="button"
+           tabindex="0"
            style="--app-color: ${escapeHtml(app.color)}">
             <button class="edit-btn" data-id="${escapeHtml(app.id)}" title="Edit app">⚙️</button>
             <div class="app-icon" style="background: ${escapeHtml(app.color)}">
@@ -143,7 +123,7 @@ function createAppCard(app) {
             </div>
             <span class="app-name">${escapeHtml(app.name)}</span>
             <span class="app-url">${escapeHtml(displayUrl)}</span>
-        </a>
+        </div>
     `;
 }
 
@@ -190,11 +170,18 @@ function setupEventListeners() {
         if (e.target === editAppModal) closeEditModal();
     });
     
+    // App Viewer
+    const backBtn = document.getElementById('backBtn');
+    if (backBtn) {
+        backBtn.addEventListener('click', closeAppViewer);
+    }
+    
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             closeAddModal();
             closeEditModal();
+            closeAppViewer();
         }
         // Focus search on Ctrl+K or Cmd+K
         if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
@@ -355,6 +342,41 @@ function updateConnectionStatus() {
         connectionStatus.textContent = '🔴 Offline';
         document.body.classList.add('offline');
     }
+}
+
+// App Viewer functions
+function openAppViewer(url, name) {
+    const appViewer = document.getElementById('appViewer');
+    const appFrame = document.getElementById('appFrame');
+    const viewerTitle = document.getElementById('viewerTitle');
+    const openExternalBtn = document.getElementById('openExternalBtn');
+    
+    if (!appViewer || !appFrame) return;
+    
+    viewerTitle.textContent = name;
+    openExternalBtn.href = url;
+    appFrame.src = url;
+    appViewer.hidden = false;
+    
+    // Hide main content
+    document.querySelector('.header').style.display = 'none';
+    document.querySelector('.main-content').style.display = 'none';
+    document.querySelector('.footer').style.display = 'none';
+}
+
+function closeAppViewer() {
+    const appViewer = document.getElementById('appViewer');
+    const appFrame = document.getElementById('appFrame');
+    
+    if (!appViewer) return;
+    
+    appViewer.hidden = true;
+    appFrame.src = 'about:blank';
+    
+    // Show main content
+    document.querySelector('.header').style.display = '';
+    document.querySelector('.main-content').style.display = '';
+    document.querySelector('.footer').style.display = '';
 }
 
 // Initialize when DOM is ready

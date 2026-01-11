@@ -1,12 +1,15 @@
 // Service Worker for PWA Home Dashboard
 
-const CACHE_NAME = 'pwa-home-v1';
+const CACHE_NAME = 'pwa-home-v2';
 const STATIC_ASSETS = [
     './',
     './index.html',
     './css/styles.css',
     './js/app.js',
-    './manifest.json'
+    './manifest.json',
+    './icons/icon-128.png',
+    './icons/icon-192.png',
+    './icons/icon-512.png'
 ];
 
 // Install event - cache static assets

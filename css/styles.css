@@ -512,3 +512,92 @@ body {
         page-break-inside: avoid;
     }
 }
+
+/* App Viewer */
+.app-viewer {
+    position: fixed;
+    inset: 0;
+    background: var(--background-color);
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+}
+
+.app-viewer[hidden] {
+    display: none;
+}
+
+.viewer-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--primary-gradient);
+    color: white;
+    box-shadow: var(--shadow-md);
+}
+
+.viewer-back-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.viewer-back-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.viewer-title {
+    flex: 1;
+    font-weight: 600;
+    font-size: 1.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.viewer-external-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.viewer-external-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.app-frame {
+    flex: 1;
+    width: 100%;
+    border: none;
+    background: white;
+}
+
+/* Frame loading state */
+.app-frame-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+}
+

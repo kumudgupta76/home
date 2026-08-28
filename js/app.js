@@ -1,4 +1,4 @@
-// PWA Home Dashboard — Material 3 launcher-style UI
+// Dock — Material 3 launcher for your web apps
 
 const STORAGE_KEY = 'pwa-home-apps';
 const THEME_KEY = 'pwa-home-theme';

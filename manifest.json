@@ -1,7 +1,7 @@
 {
-    "name": "PWA Home Dashboard",
-    "short_name": "PWA Home",
-    "description": "Your personal app dashboard - a central hub for all your web applications",
+    "name": "Dock",
+    "short_name": "Dock",
+    "description": "A launcher for your web apps - open them all from one home screen",
     "start_url": "./",
     "scope": "./",
     "display": "standalone",
@@ -10,6 +10,12 @@
     "theme_color": "#fef7ff",
     "categories": ["productivity", "utilities"],
     "icons": [
+        {
+            "src": "icons/icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        },
         {
             "src": "icons/icon-128.png",
             "sizes": "128x128",
@@ -33,7 +39,7 @@
         {
             "name": "Add App",
             "short_name": "Add",
-            "description": "Add a new app to your dashboard",
+            "description": "Add a new app to your dock",
             "url": "./?action=add",
             "icons": [
                 {

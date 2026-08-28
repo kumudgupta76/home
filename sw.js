@@ -1,6 +1,6 @@
-// Service Worker for PWA Home Dashboard
+// Service Worker for Dock
 
-const CACHE_NAME = 'pwa-home-v4';
+const CACHE_NAME = 'dock-v1';
 const STATIC_ASSETS = [
     './',
     './index.html',
@@ -8,6 +8,7 @@ const STATIC_ASSETS = [
     './js/app.js',
     './data/apps.json',
     './manifest.json',
+    './icons/icon.svg',
     './icons/icon-128.png',
     './icons/icon-192.png',
     './icons/icon-512.png'

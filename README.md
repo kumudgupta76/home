@@ -1,4 +1,4 @@
-# 🏠 PWA Home Dashboard
+# Dock
 
 A Progressive Web App (PWA) that serves as a personal home page and launcher for your web applications.
 
@@ -26,8 +26,10 @@ A Progressive Web App (PWA) that serves as a personal home page and launcher for
 |---------|-------------|
 | 📱 **Installable** | Install as a standalone app on Windows, macOS, Android, iOS |
 | 🔌 **Offline Support** | Works without internet using Service Worker caching |
-| 🔍 **Search** | Instantly filter apps with search (`Ctrl+K` shortcut) |
-| ➕ **Add Apps** | Add any web app with custom icon, color, and name |
+| ⬛ **Layouts** | Switch between a launcher grid and a horizontal list |
+| ➕ **Add Apps** | Add any web app with a name, URL and icon |
+| 🎨 **Icon Picker** | Search the web for an icon, pick an emoji, or upload one — saved locally |
+| 📄 **JSON Import/Export** | Bulk-add apps from `data/apps.json` or any JSON file |
 | 🔄 **Auto-fetch Metadata** | Automatically fetches site title and favicon from URL |
 | ✏️ **Edit & Delete** | Manage your apps easily with edit/delete options |
 | 🖼️ **Embedded Viewer** | Opens apps within the PWA (no browser redirect) |

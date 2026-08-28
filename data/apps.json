@@ -1,0 +1,46 @@
+{
+    "version": 1,
+    "name": "My Apps",
+    "apps": [
+        {
+            "name": "Money",
+            "url": "https://kumudgupta76.github.io/money/",
+            "icon": "💰"
+        },
+        {
+            "name": "Home",
+            "url": "https://kumudgupta76.github.io/home/",
+            "icon": "🏠"
+        },
+        {
+            "name": "Basic Finance",
+            "url": "https://kumudgupta76.github.io/basic-finance/",
+            "icon": "💵"
+        },
+        {
+            "name": "Profile",
+            "url": "https://kumudgupta76.github.io/profile/",
+            "icon": "👤"
+        },
+        {
+            "name": "Calendar",
+            "url": "https://kumudgupta76.github.io/cal-app/",
+            "icon": "📅"
+        },
+        {
+            "name": "Todo",
+            "url": "https://kumudgupta76.github.io/todo/",
+            "icon": "✅"
+        },
+        {
+            "name": "StreamAgenda",
+            "url": "https://kumudgupta76.github.io/stream-agenda/",
+            "icon": "📺"
+        },
+        {
+            "name": "My Buddy",
+            "url": "https://kumudgupta76.github.io/my-buddy/",
+            "icon": "👥"
+        }
+    ]
+}

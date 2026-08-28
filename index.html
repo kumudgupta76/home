@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="PWA Home - Your central hub for web applications">
-    <meta name="theme-color" content="#667eea">
+    <meta name="theme-color" content="#fef7ff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#141218" media="(prefers-color-scheme: dark)">
+    <meta name="color-scheme" content="light dark">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -21,120 +23,268 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <header class="header">
-        <div class="header-content">
-            <h1>🏠 My Apps</h1>
-            <p class="subtitle">Your personal app dashboard</p>
+    <div class="app-shell">
+        <!-- Top app bar -->
+        <header class="top-app-bar" id="topAppBar">
+            <div class="top-bar-row">
+                <div class="top-bar-heading">
+                    <h1 class="top-bar-title">My Apps</h1>
+                    <p class="top-bar-subtitle" id="topBarSubtitle">Tap to open · long-press to edit</p>
+                </div>
+                <div class="top-bar-actions">
+                    <button id="layoutBtn" class="icon-button" aria-label="Switch to list layout" title="Switch layout">
+                        <svg id="layoutIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6V4h18v2Zm0 5V9h18v2Zm0 5v-2h18v2Zm0 5v-2h18v2Z"/></svg>
+                    </button>
+                    <button id="installBtn" class="icon-button" hidden aria-label="Install app" title="Install app">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16 7 11l1.4-1.45 2.6 2.6V4h2v8.15l2.6-2.6L17 11l-5 5Zm-6 4q-.825 0-1.412-.587Q4 18.825 4 18v-3h2v3h12v-3h2v3q0 .825-.587 1.413Q18.825 20 18 20Z"/></svg>
+                    </button>
+                    <button id="menuBtn" class="icon-button" aria-label="More options" title="More options">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20q-.825 0-1.412-.587Q10 18.825 10 18t.588-1.413Q11.175 16 12 16t1.413.587Q14 17.175 14 18t-.587 1.413Q12.825 20 12 20Zm0-6q-.825 0-1.412-.588Q10 12.825 10 12t.588-1.413Q11.175 10 12 10t1.413.587Q14 11.175 14 12q0 .825-.587 1.412Q12.825 14 12 14Zm0-6q-.825 0-1.412-.588Q10 6.825 10 6t.588-1.412Q11.175 4 12 4t1.413.588Q14 5.175 14 6t-.587 1.412Q12.825 8 12 8Z"/></svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="section-header">
+                <h2 class="section-title">All apps</h2>
+                <span class="count-badge" id="appCount">0</span>
+            </div>
+
+            <div id="appsGrid" class="apps-grid" role="list"></div>
+
+            <div id="emptyState" class="empty-state" hidden>
+                <div class="empty-state-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M4 8V4h4v4Zm6 0V4h4v4Zm6 0V4h4v4ZM4 14v-4h4v4Zm6 0v-4h4v4Zm6 0v-4h4v4ZM4 20v-4h4v4Zm6 0v-4h4v4Zm6 0v-4h4v4Z"/></svg>
+                </div>
+                <h3 id="emptyTitle">No apps yet</h3>
+                <p id="emptyMessage">Add your first app, or import a list from a JSON file.</p>
+                <button id="emptyImportBtn" class="btn btn-tonal">Import from JSON</button>
+            </div>
+        </main>
+
+        <div class="status-bar">
+            <span class="status-dot" id="statusDot" aria-hidden="true"></span>
+            <span id="connectionStatus">Online</span>
         </div>
-        <button id="installBtn" class="install-btn" hidden>
-            <span>📲</span> Install App
-        </button>
-    </header>
+    </div>
 
-    <main class="main-content">
-        <section class="search-section">
-            <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search apps...">
-        </section>
+    <!-- Floating action button -->
+    <button id="addAppBtn" class="fab" aria-label="Add app">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 13H5v-2h6V5h2v6h6v2h-6v6h-2Z"/></svg>
+        <span class="fab-label">Add app</span>
+    </button>
 
-        <section class="apps-section">
-            <h2 class="section-title">Applications</h2>
-            <div id="appsGrid" class="apps-grid">
-                <!-- Apps will be dynamically loaded here -->
+    <!-- Overflow menu sheet -->
+    <div id="menuSheet" class="sheet-container" hidden>
+        <div class="scrim" data-close-sheet></div>
+        <div class="sheet sheet-compact" role="dialog" aria-label="Options">
+            <div class="drag-handle" aria-hidden="true"></div>
+            <ul class="menu-list">
+                <li><button class="menu-item" id="menuImportBtn">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16 7 11l1.4-1.45 2.6 2.6V4h2v8.15l2.6-2.6L17 11l-5 5Zm-6 4q-.825 0-1.412-.587Q4 18.825 4 18v-3h2v3h12v-3h2v3q0 .825-.587 1.413Q18.825 20 18 20Z"/></svg>
+                    <span><strong>Import apps</strong><small>From a JSON file or the bundled list</small></span>
+                </button></li>
+                <li><button class="menu-item" id="menuExportBtn">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 20V7.825l-2.6 2.6L7 9l5-5 5 5-1.4 1.425-2.6-2.6V20Zm-7 0v-5h2v3h12v-3h2v5Z"/></svg>
+                    <span><strong>Export apps</strong><small>Download apps.json</small></span>
+                </button></li>
+                <li><button class="menu-item" id="menuThemeBtn">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21q-3.75 0-6.375-2.625T3 12q0-3.75 2.625-6.375T12 3q.35 0 .688.025.337.025.662.075-1.025.725-1.638 1.888Q11.1 6.15 11.1 7.5q0 2.25 1.575 3.825Q14.25 12.9 16.5 12.9q1.375 0 2.525-.613 1.15-.612 1.85-1.637.05.325.075.662Q21 11.65 21 12q0 3.75-2.625 6.375T12 21Z"/></svg>
+                    <span><strong>Theme</strong><small id="themeLabel">Follow system</small></span>
+                </button></li>
+                <li><button class="menu-item menu-item-danger" id="menuResetBtn">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 21q-.825 0-1.412-.587Q5 19.825 5 19V6H4V4h5V3h6v1h5v2h-1v13q0 .825-.587 1.413Q17.825 21 17 21Zm2-4h2V8H9Zm4 0h2V8h-2Z"/></svg>
+                    <span><strong>Reset apps</strong><small>Restore the bundled list</small></span>
+                </button></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Import sheet -->
+    <div id="importSheet" class="sheet-container" hidden>
+        <div class="scrim" data-close-sheet></div>
+        <div class="sheet" role="dialog" aria-labelledby="importSheetTitle">
+            <div class="drag-handle" aria-hidden="true"></div>
+            <div class="sheet-header">
+                <h2 id="importSheetTitle">Import apps</h2>
+                <button class="icon-button" data-close-sheet aria-label="Close">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5l5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6Z"/></svg>
+                </button>
             </div>
-        </section>
+            <div class="sheet-body">
+                <p class="helper-text">
+                    Pick a <code>.json</code> file with the same fields you fill in when adding an app:
+                    <code>name</code>, <code>url</code>, <code>icon</code>, <code>color</code>.
+                </p>
+                <pre class="code-sample">{
+  "apps": [
+    {
+      "name": "Money",
+      "url": "https://example.com/money/",
+      "icon": "💰",
+      "color": "#4caf50"
+    }
+  ]
+}</pre>
 
-        <section class="add-app-section">
-            <button id="addAppBtn" class="add-app-btn">
-                <span class="plus-icon">+</span>
-                <span>Add New App</span>
-            </button>
-        </section>
-    </main>
+                <div class="segmented" role="radiogroup" aria-label="Import mode">
+                    <button type="button" class="segment is-selected" data-import-mode="merge" role="radio" aria-checked="true">Merge</button>
+                    <button type="button" class="segment" data-import-mode="replace" role="radio" aria-checked="false">Replace all</button>
+                </div>
 
-    <!-- Add App Modal -->
-    <div id="addAppModal" class="modal" hidden>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Add New App</h2>
-                <button id="closeModalBtn" class="close-btn">&times;</button>
+                <input type="file" id="importFileInput" accept="application/json,.json" hidden>
+                <div class="sheet-actions sheet-actions-stack">
+                    <button type="button" id="pickFileBtn" class="btn btn-filled btn-block">Choose JSON file</button>
+                    <button type="button" id="loadBundledBtn" class="btn btn-tonal btn-block">Load bundled data/apps.json</button>
+                </div>
             </div>
-            <form id="addAppForm" class="add-app-form">
-                <div class="form-group">
-                    <label for="appUrl">App URL</label>
-                    <div class="input-with-btn">
-                        <input type="url" id="appUrl" required placeholder="https://example.com">
-                        <button type="button" id="fetchMetaBtn" class="btn btn-fetch" title="Fetch icon & title from URL">🔍</button>
+        </div>
+    </div>
+
+    <!-- Add app sheet -->
+    <div id="addAppModal" class="sheet-container" hidden>
+        <div class="scrim" data-close-sheet></div>
+        <div class="sheet" role="dialog" aria-labelledby="addSheetTitle">
+            <div class="drag-handle" aria-hidden="true"></div>
+            <div class="sheet-header">
+                <h2 id="addSheetTitle">Add app</h2>
+                <button class="icon-button" id="closeModalBtn" aria-label="Close">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5l5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6Z"/></svg>
+                </button>
+            </div>
+            <form id="addAppForm" class="sheet-body">
+                <div class="field field-with-action">
+                    <div class="text-field">
+                        <input type="url" id="appUrl" required placeholder=" " autocomplete="url">
+                        <label for="appUrl">App URL</label>
                     </div>
+                    <button type="button" id="fetchMetaBtn" class="icon-button icon-button-filled" title="Fetch icon &amp; title from URL" aria-label="Fetch icon and title">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 16q-2.725 0-4.612-1.888Q3 12.225 3 9.5q0-2.725 1.888-4.613Q6.775 3 9.5 3t4.613 1.887Q16 6.775 16 9.5q0 1.1-.35 2.075-.35.975-.95 1.725l6.15 6.15-1.4 1.4-6.15-6.15q-.75.6-1.725.95Q10.6 16 9.5 16Zm0-2q1.875 0 3.188-1.312Q14 11.375 14 9.5t-1.312-3.188Q11.375 5 9.5 5T6.312 6.312Q5 7.625 5 9.5t1.312 3.188Q7.625 14 9.5 14Z"/></svg>
+                    </button>
                 </div>
-                <div class="form-group">
-                    <label for="appName">App Name</label>
-                    <input type="text" id="appName" required placeholder="e.g., Gmail">
+                <div class="text-field">
+                    <input type="text" id="appName" required placeholder=" ">
+                    <label for="appName">App name</label>
                 </div>
-                <div class="form-group">
-                    <label for="appIcon">Icon (emoji or URL)</label>
-                    <input type="text" id="appIcon" placeholder="📧 or https://...">
+                <div class="icon-field">
+                    <span class="icon-preview" id="addIconPreview">📱</span>
+                    <div class="icon-field-text">
+                        <strong>Icon</strong>
+                        <small id="addIconValue">Default</small>
+                    </div>
+                    <button type="button" class="btn btn-tonal" data-icon-picker="add">Change</button>
+                    <input type="hidden" id="appIcon">
                 </div>
-                <div class="form-group">
-                    <label for="appColor">Tile Color</label>
-                    <input type="color" id="appColor" value="#667eea">
-                </div>
-                <div class="form-actions">
-                    <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Add App</button>
+                <div class="sheet-actions">
+                    <button type="button" id="cancelBtn" class="btn btn-text">Cancel</button>
+                    <button type="submit" class="btn btn-filled">Add</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Edit App Modal -->
-    <div id="editAppModal" class="modal" hidden>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Edit App</h2>
-                <button id="closeEditModalBtn" class="close-btn">&times;</button>
+    <!-- Edit app sheet -->
+    <div id="editAppModal" class="sheet-container" hidden>
+        <div class="scrim" data-close-sheet></div>
+        <div class="sheet" role="dialog" aria-labelledby="editSheetTitle">
+            <div class="drag-handle" aria-hidden="true"></div>
+            <div class="sheet-header">
+                <h2 id="editSheetTitle">Edit app</h2>
+                <button class="icon-button" id="closeEditModalBtn" aria-label="Close">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5l5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6Z"/></svg>
+                </button>
             </div>
-            <form id="editAppForm" class="add-app-form">
+            <form id="editAppForm" class="sheet-body">
                 <input type="hidden" id="editAppId">
-                <div class="form-group">
-                    <label for="editAppName">App Name</label>
-                    <input type="text" id="editAppName" required placeholder="e.g., Gmail">
+                <div class="text-field">
+                    <input type="text" id="editAppName" required placeholder=" ">
+                    <label for="editAppName">App name</label>
                 </div>
-                <div class="form-group">
+                <div class="text-field">
+                    <input type="url" id="editAppUrl" required placeholder=" ">
                     <label for="editAppUrl">App URL</label>
-                    <input type="url" id="editAppUrl" required placeholder="https://example.com">
                 </div>
-                <div class="form-group">
-                    <label for="editAppIcon">Icon (emoji or URL)</label>
-                    <input type="text" id="editAppIcon" placeholder="📧 or https://...">
+                <div class="icon-field">
+                    <span class="icon-preview" id="editIconPreview">📱</span>
+                    <div class="icon-field-text">
+                        <strong>Icon</strong>
+                        <small id="editIconValue">Default</small>
+                    </div>
+                    <button type="button" class="btn btn-tonal" data-icon-picker="edit">Change</button>
+                    <input type="hidden" id="editAppIcon">
                 </div>
-                <div class="form-group">
-                    <label for="editAppColor">Tile Color</label>
-                    <input type="color" id="editAppColor" value="#667eea">
-                </div>
-                <div class="form-actions">
-                    <button type="button" id="deleteAppBtn" class="btn btn-danger">Delete</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                <div class="sheet-actions">
+                    <button type="button" id="deleteAppBtn" class="btn btn-text btn-danger">Delete</button>
+                    <button type="submit" class="btn btn-filled">Save</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <footer class="footer">
-        <p>PWA Home Dashboard • <span id="connectionStatus">🟢 Online</span></p>
-    </footer>
+    <!-- Icon picker sheet -->
+    <div id="iconSheet" class="sheet-container" hidden>
+        <div class="scrim" data-close-sheet></div>
+        <div class="sheet" role="dialog" aria-labelledby="iconSheetTitle">
+            <div class="drag-handle" aria-hidden="true"></div>
+            <div class="sheet-header">
+                <h2 id="iconSheetTitle">Choose icon</h2>
+                <button class="icon-button" data-close-sheet aria-label="Close">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5l5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6Z"/></svg>
+                </button>
+            </div>
+            <div class="sheet-body">
+                <div class="segmented" role="tablist">
+                    <button type="button" class="segment is-selected" data-icon-tab="web" role="tab" aria-selected="true">Search web</button>
+                    <button type="button" class="segment" data-icon-tab="emoji" role="tab" aria-selected="false">Emoji</button>
+                    <button type="button" class="segment" data-icon-tab="upload" role="tab" aria-selected="false">Upload</button>
+                </div>
+
+                <div class="icon-panel" data-icon-panel="web">
+                    <div class="field-with-action">
+                        <div class="text-field">
+                            <input type="text" id="iconSearchInput" placeholder=" " autocomplete="off">
+                            <label for="iconSearchInput">Site, brand or image URL</label>
+                        </div>
+                        <button type="button" id="iconSearchBtn" class="icon-button icon-button-filled" aria-label="Search icons">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 16q-2.725 0-4.612-1.888Q3 12.225 3 9.5q0-2.725 1.888-4.613Q6.775 3 9.5 3t4.613 1.887Q16 6.775 16 9.5q0 1.1-.35 2.075-.35.975-.95 1.725l6.15 6.15-1.4 1.4-6.15-6.15q-.75.6-1.725.95Q10.6 16 9.5 16Zm0-2q1.875 0 3.188-1.312Q14 11.375 14 9.5t-1.312-3.188Q11.375 5 9.5 5T6.312 6.312Q5 7.625 5 9.5t1.312 3.188Q7.625 14 9.5 14Z"/></svg>
+                        </button>
+                    </div>
+                    <p class="helper-text">Icons are downloaded and stored on this device, so they keep working offline.</p>
+                    <div class="icon-results" id="iconResults"></div>
+                </div>
+
+                <div class="icon-panel" data-icon-panel="emoji" hidden>
+                    <div class="emoji-grid" id="emojiGrid"></div>
+                </div>
+
+                <div class="icon-panel" data-icon-panel="upload" hidden>
+                    <input type="file" id="iconFileInput" accept="image/*" hidden>
+                    <button type="button" id="iconUploadBtn" class="btn btn-tonal btn-block">Choose image from device</button>
+                    <p class="helper-text">Pictures are resized to 128&nbsp;px and saved locally.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- App Viewer -->
     <div id="appViewer" class="app-viewer" hidden>
         <div class="viewer-header">
-            <button id="backBtn" class="viewer-back-btn">
-                <span>←</span> Back
+            <button id="backBtn" class="icon-button" aria-label="Back">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9.55 18-6-6 6-6L11 7.45 6.45 12 11 16.55Z"/></svg>
             </button>
             <span id="viewerTitle" class="viewer-title">App</span>
-            <a id="openExternalBtn" class="viewer-external-btn" href="#" target="_blank" rel="noopener noreferrer" title="Open in browser">
-                ↗
+            <a id="openExternalBtn" class="icon-button" href="#" target="_blank" rel="noopener noreferrer" title="Open in browser" aria-label="Open in browser">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21q-.825 0-1.412-.587Q3 19.825 3 19V5q0-.825.588-1.412Q4.175 3 5 3h7v2H5v14h14v-7h2v7q0 .825-.587 1.413Q19.825 21 19 21Zm4.7-5.3-1.4-1.4L17.6 5H14V3h7v7h-2V6.4Z"/></svg>
             </a>
         </div>
-        <iframe id="appFrame" class="app-frame" sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals allow-downloads"></iframe>
+        <iframe id="appFrame" class="app-frame" title="App content" sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals allow-downloads"></iframe>
+    </div>
+
+    <!-- Snackbar -->
+    <div id="snackbar" class="snackbar" role="status" aria-live="polite" hidden>
+        <span id="snackbarText"></span>
+        <button id="snackbarAction" class="snackbar-action" hidden></button>
     </div>
 
     <script src="js/app.js"></script>

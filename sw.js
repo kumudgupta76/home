@@ -1,6 +1,6 @@
 // Service Worker for Dock
 
-const CACHE_VERSION = 'v4';
+const CACHE_VERSION = 'v5';
 const CACHE_PREFIX = `dock-${encodeURIComponent(self.registration.scope)}-`;
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const STATIC_ASSETS = [

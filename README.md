@@ -289,7 +289,7 @@ in `js/vendor`. The script is precached with the shell so reordering works offli
 
 ```javascript
 // Cache version - increment to force update
-const CACHE_VERSION = 'v4';
+const CACHE_VERSION = 'v5';
 
 // Cached assets
 const STATIC_ASSETS = [

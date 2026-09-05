@@ -1,6 +1,8 @@
 // Service Worker for Dock
 
-const CACHE_NAME = 'dock-v1';
+const CACHE_VERSION = 'v2';
+const CACHE_PREFIX = `dock-${encodeURIComponent(self.registration.scope)}-`;
+const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const STATIC_ASSETS = [
     './',
     './index.html',
@@ -14,115 +16,43 @@ const STATIC_ASSETS = [
     './icons/icon-512.png'
 ];
 
-// Install event - cache static assets
+const ASSET_URLS = new Set(STATIC_ASSETS.map((asset) => new URL(asset, self.registration.scope).href));
+
 self.addEventListener('install', (event) => {
-    console.log('Service Worker: Installing...');
-    
-    event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then((cache) => {
-                console.log('Service Worker: Caching static assets');
-                return cache.addAll(STATIC_ASSETS);
-            })
-            .then(() => {
-                console.log('Service Worker: Static assets cached');
-                return self.skipWaiting();
-            })
-            .catch((error) => {
-                console.error('Service Worker: Cache failed', error);
-            })
-    );
+    event.waitUntil((async () => {
+        const cache = await caches.open(CACHE_NAME);
+        await cache.addAll([...ASSET_URLS].map((url) => new Request(url, { cache: 'reload' })));
+    })());
 });
 
-// Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-    console.log('Service Worker: Activating...');
-    
-    event.waitUntil(
-        caches.keys()
-            .then((cacheNames) => {
-                return Promise.all(
-                    cacheNames
-                        .filter((name) => name !== CACHE_NAME)
-                        .map((name) => {
-                            console.log('Service Worker: Deleting old cache:', name);
-                            return caches.delete(name);
-                        })
-                );
-            })
-            .then(() => {
-                console.log('Service Worker: Activated');
-                return self.clients.claim();
-            })
-    );
+    event.waitUntil((async () => {
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames
+            .filter((name) => name.startsWith(CACHE_PREFIX) && name !== CACHE_NAME)
+            .map((name) => caches.delete(name)));
+        await self.clients.claim();
+    })());
 });
 
-// Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', (event) => {
-    // Skip non-GET requests
-    if (event.request.method !== 'GET') {
-        return;
-    }
-    
-    // Skip external requests
-    if (!event.request.url.startsWith(self.location.origin)) {
-        return;
-    }
-    
-    event.respondWith(
-        caches.match(event.request)
-            .then((cachedResponse) => {
-                if (cachedResponse) {
-                    // Return cached response and update cache in background
-                    event.waitUntil(updateCache(event.request));
-                    return cachedResponse;
-                }
-                
-                // Not in cache, fetch from network
-                return fetchAndCache(event.request);
-            })
-            .catch(() => {
-                // Network failed, try to return cached index for navigation
-                if (event.request.mode === 'navigate') {
-                    return caches.match('./index.html');
-                }
-                return new Response('Offline', { status: 503 });
-            })
-    );
+    if (event.request.method !== 'GET') return;
+
+    const url = new URL(event.request.url);
+    if (event.request.mode === 'navigate') url.search = '';
+    if (!ASSET_URLS.has(url.href)) return;
+
+    event.respondWith((async () => {
+        const cache = await caches.open(CACHE_NAME);
+        const cached = await cache.match(url.href);
+        if (cached) return cached;
+        try {
+            return await fetch(event.request);
+        } catch {
+            return new Response('Offline', { status: 503 });
+        }
+    })());
 });
-
-// Fetch and cache helper
-async function fetchAndCache(request) {
-    try {
-        const response = await fetch(request);
-        
-        // Only cache successful responses
-        if (response.ok) {
-            const cache = await caches.open(CACHE_NAME);
-            cache.put(request, response.clone());
-        }
-        
-        return response;
-    } catch (error) {
-        console.error('Service Worker: Fetch failed', error);
-        throw error;
-    }
-}
-
-// Update cache in background
-async function updateCache(request) {
-    try {
-        const response = await fetch(request);
-        
-        if (response.ok) {
-            const cache = await caches.open(CACHE_NAME);
-            cache.put(request, response.clone());
-        }
-    } catch (error) {
-        // Network failed, that's okay for background update
-        console.log('Service Worker: Background update failed (offline)');
-    }
-}
 
 // Handle messages from clients
 self.addEventListener('message', (event) => {

@@ -794,6 +794,7 @@ async function handleIconUpload(e) {
 
 function showSnackbar(message, actionLabel, actionFn) {
     clearTimeout(snackbarTimer);
+    snackbar.classList.remove('is-update');
 
     $('snackbarText').textContent = message;
     const actionBtn = $('snackbarAction');
@@ -848,7 +849,38 @@ function closeAppViewer() {
 async function registerServiceWorker() {
     if (!('serviceWorker' in navigator)) return;
     try {
-        await navigator.serviceWorker.register('./sw.js');
+        let reloadRequested = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (reloadRequested) location.reload();
+        });
+        const registration = await navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' });
+        const offerUpdate = () => {
+            if (!registration.waiting || !navigator.serviceWorker.controller) return;
+            showSnackbar('Dock update ready', 'Reload', () => {
+                if (!registration.waiting) return;
+                reloadRequested = true;
+                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            });
+            clearTimeout(snackbarTimer);
+            snackbar.classList.add('is-update');
+        };
+        const watchInstall = () => {
+            const worker = registration.installing;
+            if (!worker) return;
+            worker.addEventListener('statechange', () => {
+                if (worker.state === 'installed') offerUpdate();
+            });
+        };
+        registration.addEventListener('updatefound', watchInstall);
+        watchInstall();
+        offerUpdate();
+        const checkForUpdate = () => {
+            if (document.visibilityState !== 'visible') return;
+            offerUpdate();
+            if (navigator.onLine) registration.update().catch(() => {});
+        };
+        document.addEventListener('visibilitychange', checkForUpdate);
+        window.addEventListener('online', checkForUpdate);
     } catch (error) {
         console.error('Service Worker registration failed:', error);
     }

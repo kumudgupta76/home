@@ -41,6 +41,12 @@ A Progressive Web App (PWA) that serves as a personal home page and launcher for
 
 ## 🔄 How to Refresh / Update
 
+Dock checks for updates on launch, when returning to the app, and when reconnecting.
+When **Dock update ready** appears, select **Reload** to apply the cached release.
+Updates wait until you accept or close all Dock windows; they do not interrupt an
+open app automatically. Saved apps and preferences remain in localStorage.
+For the first upgrade from the older worker, close all Dock windows and reopen.
+
 ### When Running in Browser
 
 1. **Hard Refresh**: `Ctrl+Shift+R` (Windows/Linux) or `Cmd+Shift+R` (Mac)
@@ -249,15 +255,25 @@ home/
 
 ### Caching Strategy
 
-The Service Worker uses a **Cache-First with Background Update** strategy:
+The Service Worker uses a **versioned, cache-first app shell**:
 
-1. Check cache for requested resource
-2. If cached: return immediately, update cache in background
-3. If not cached: fetch from network, cache the response
+1. Download all shell assets, bypassing the HTTP cache. A failed download rejects the installation and leaves the previous worker active.
+2. Serve the installed release from its own scope-specific cache without background replacement of individual files.
+3. Activate an update after the user selects Reload or closes all Dock windows. Delete only older caches with this Dock scope's prefix.
+4. Serve the launcher offline, including start URLs with query parameters. Do not intercept unrelated URLs, APIs, or embedded apps.
+
+Increment `CACHE_VERSION` in `sw.js` for every release that changes HTML, CSS,
+JavaScript, bundled data, the manifest, or icons. Deploy these files together.
+The legacy shared `dock-v1` cache is no longer read and is left untouched to avoid
+deleting data belonging to other apps on the same origin.
+
+Offline support covers Dock's shell and locally saved app list/icons. Linked apps
+and remote icon URLs need their own offline support; Dock cannot cache cross-origin
+apps on their behalf.
 
 ```javascript
 // Cache version - increment to force update
-const CACHE_NAME = 'pwa-home-v2';
+const CACHE_VERSION = 'v2';
 
 // Cached assets
 const STATIC_ASSETS = [

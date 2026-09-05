@@ -303,6 +303,77 @@ input {
     gap: 2px;
 }
 
+#reorderBtn {
+    margin-left: auto;
+}
+
+#reorderBtn[aria-pressed="true"] {
+    background: var(--secondary-container);
+    color: var(--on-secondary-container);
+}
+
+.app-item {
+    position: relative;
+    min-width: 0;
+}
+
+.reorder-handle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
+    cursor: grab;
+    touch-action: none;
+}
+
+.reorder-handle:active {
+    cursor: grabbing;
+}
+
+.is-reordering .app-tile {
+    padding-top: 44px;
+    cursor: default;
+}
+
+.is-list.is-reordering .app-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.is-list.is-reordering .reorder-handle {
+    position: static;
+    flex: none;
+}
+
+.is-list.is-reordering .app-tile {
+    min-width: 0;
+    flex: 1;
+    padding-top: 10px;
+}
+
+.is-drag-chosen {
+    outline: 2px solid var(--primary);
+    border-radius: var(--shape-xs);
+    background: var(--surface-container);
+}
+
+.is-drag-placeholder {
+    opacity: .3;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
 /* --------------------------------------------------------------------------
    App tile (launcher style)
    -------------------------------------------------------------------------- */

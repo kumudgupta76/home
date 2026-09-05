@@ -27,6 +27,7 @@ A Progressive Web App (PWA) that serves as a personal home page and launcher for
 | 📱 **Installable** | Install as a standalone app on Windows, macOS, Android, iOS |
 | 🔌 **Offline Support** | Works without internet using Service Worker caching |
 | ⬛ **Layouts** | Switch between a launcher grid and a horizontal list |
+| **Reorder Apps** | Drag with mouse or touch, or use the keyboard; both layouts share your saved order |
 | ➕ **Add Apps** | Add any web app with a name, URL and icon |
 | 🎨 **Icon Picker** | Search the web for an icon, pick an emoji, or upload one — saved locally |
 | 📄 **JSON Import/Export** | Bulk-add apps from `data/apps.json` or any JSON file |
@@ -140,12 +141,23 @@ npx serve .
 2. Click the **⚙️** button
 3. Edit details or click **Delete**
 
+### Reordering Apps
+
+1. Select **Reorder apps** beside the app count.
+2. Drag an app's handle to its new position in either grid or list layout.
+3. Select the checkmark (**Done reordering**) or press `Escape` to finish.
+
+Changes save immediately on this device and survive layout switches and reloads.
+With a handle focused, use arrow keys to move an app, or `Home` / `End` to move it
+to the first / last position. Up and down move by a row in grid layout.
+Normal taps and long-press editing resume when you leave Reorder mode.
+
 ### Keyboard Shortcuts
 
 | Shortcut | Action |
 |----------|--------|
 | `Ctrl+K` / `Cmd+K` | Focus search input |
-| `Escape` | Close modal or app viewer |
+| `Escape` | Exit Reorder mode, or close modal or app viewer |
 
 ---
 
@@ -271,14 +283,18 @@ Offline support covers Dock's shell and locally saved app list/icons. Linked app
 and remote icon URLs need their own offline support; Dock cannot cache cross-origin
 apps on their behalf.
 
+Drag-and-drop uses locally bundled SortableJS 1.15.6 (MIT), including its license
+in `js/vendor`. The script is precached with the shell so reordering works offline.
+
 ```javascript
 // Cache version - increment to force update
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 
 // Cached assets
 const STATIC_ASSETS = [
     './', './index.html', './css/styles.css',
-    './js/app.js', './manifest.json',
+    './js/app.js', './js/vendor/sortable-1.15.6.min.js',
+    './data/apps.json', './manifest.json', './icons/icon.svg',
     './icons/icon-128.png', './icons/icon-192.png', './icons/icon-512.png'
 ];
 ```

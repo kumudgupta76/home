@@ -49,9 +49,13 @@
             <div class="section-header">
                 <h2 class="section-title">All apps</h2>
                 <span class="count-badge" id="appCount">0</span>
+                <button id="reorderBtn" class="icon-button" aria-label="Reorder apps" title="Reorder apps" aria-pressed="false" aria-controls="appsGrid" disabled>
+                    <svg id="reorderIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 3-4 4h3v10H3l4 4 4-4H8V7h3ZM13 5h8v2h-8Zm0 6h8v2h-8Zm0 6h8v2h-8Z"/></svg>
+                </button>
             </div>
 
             <div id="appsGrid" class="apps-grid" role="list"></div>
+            <p id="reorderStatus" class="visually-hidden" role="status" aria-live="polite"></p>
 
             <div id="emptyState" class="empty-state" hidden>
                 <div class="empty-state-icon" aria-hidden="true">
@@ -290,6 +294,7 @@
         <button id="snackbarAction" class="snackbar-action" hidden></button>
     </div>
 
+    <script src="js/vendor/sortable-1.15.6.min.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

@@ -22,6 +22,8 @@ let lastDeleted = null;
 let snackbarTimer = null;
 let iconTarget = null;
 let viewerControlsTimer = null;
+let isReordering = false;
+let appSortable = null;
 
 // DOM
 const $ = (id) => document.getElementById(id);
@@ -83,6 +85,24 @@ async function fetchBundledApps() {
 
 function saveApps() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(apps));
+}
+
+function moveApp(fromIndex, toIndex) {
+    if (!Number.isInteger(fromIndex) || !Number.isInteger(toIndex)
+        || fromIndex < 0 || toIndex < 0 || fromIndex >= apps.length
+        || toIndex >= apps.length || fromIndex === toIndex) return false;
+
+    const previousOrder = [...apps];
+    const [app] = apps.splice(fromIndex, 1);
+    apps.splice(toIndex, 0, app);
+    try {
+        saveApps();
+    } catch {
+        apps = previousOrder;
+        showSnackbar('Could not save app order');
+        return false;
+    }
+    return true;
 }
 
 function generateId() {
@@ -158,6 +178,7 @@ function escapeHtml(text) {
 
 function renderApps() {
     appCount.textContent = apps.length;
+    $('reorderBtn').disabled = apps.length < 2 && !isReordering;
 
     if (apps.length === 0) {
         appsGrid.innerHTML = '';
@@ -169,14 +190,21 @@ function renderApps() {
     appsGrid.innerHTML = apps.map(createAppTile).join('');
 }
 
-function createAppTile(app) {
+function createAppTile(app, index) {
     const iconMarkup = isImageIcon(app.icon)
         ? `<img src="${escapeHtml(app.icon)}" alt="" loading="lazy" onerror="this.remove()">`
         : escapeHtml(app.icon);
 
     return `
-        <div role="listitem">
+        <div class="app-item" role="listitem">
+            ${isReordering ? `<button type="button" class="icon-button reorder-handle"
+                aria-label="Move ${escapeHtml(app.name)}, position ${index + 1} of ${apps.length}"
+                aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Home End"
+                title="Move ${escapeHtml(app.name)}">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5h3v3H8Zm5 0h3v3h-3ZM8 10.5h3v3H8Zm5 0h3v3h-3ZM8 16h3v3H8Zm5 0h3v3h-3Z"/></svg>
+            </button>` : ''}
             <button class="app-tile" type="button"
+                    ${isReordering ? 'disabled' : ''}
                     data-id="${escapeHtml(app.id)}"
                     data-url="${escapeHtml(app.url)}"
                     data-name="${escapeHtml(app.name)}"
@@ -186,9 +214,9 @@ function createAppTile(app) {
                     <span class="app-name">${escapeHtml(app.name)}</span>
                     <span class="app-host">${escapeHtml(getDisplayUrl(app.url))}</span>
                 </span>
-                <span class="tile-edit-btn" role="button" tabindex="0" aria-label="Edit ${escapeHtml(app.name)}" data-edit="${escapeHtml(app.id)}">
+                ${isReordering ? '' : `<span class="tile-edit-btn" role="button" tabindex="0" aria-label="Edit ${escapeHtml(app.name)}" data-edit="${escapeHtml(app.id)}">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19h1.4l8.625-8.625-1.4-1.4L5 17.6ZM19.3 8.925l-4.25-4.2 1.4-1.4q.575-.575 1.413-.575.837 0 1.412.575l1.4 1.4q.575.575.6 1.388.025.812-.55 1.387ZM3 21v-4.25l10.6-10.6 4.25 4.25L7.25 21Z"/></svg>
-                </span>
+                </span>`}
             </button>
         </div>
     `;
@@ -216,9 +244,65 @@ function buildEmojiGrid() {
         .join('');
 }
 
+function setReorderMode(enabled) {
+    isReordering = enabled;
+    appsGrid.classList.toggle('is-reordering', enabled);
+    appSortable.option('disabled', !enabled);
+    const button = $('reorderBtn');
+    button.setAttribute('aria-pressed', String(enabled));
+    button.setAttribute('aria-label', enabled ? 'Done reordering' : 'Reorder apps');
+    button.title = enabled ? 'Done reordering' : 'Reorder apps';
+    $('reorderIcon').innerHTML = enabled
+        ? '<path d="m9 16.2-4.2-4.2L3.4 13.4 9 19 21 7l-1.4-1.4Z"/>'
+        : '<path d="m7 3-4 4h3v10H3l4 4 4-4H8V7h3ZM13 5h8v2h-8Zm0 6h8v2h-8Zm0 6h8v2h-8Z"/>';
+    $('reorderStatus').textContent = enabled ? 'Reorder mode on' : 'Reorder mode off';
+    renderApps();
+}
+
+function finishAppMove(fromIndex, toIndex) {
+    const moved = moveApp(fromIndex, toIndex);
+    const focusIndex = moved ? toIndex : fromIndex;
+    renderApps();
+    appsGrid.children[focusIndex]?.querySelector('.reorder-handle')?.focus({ preventScroll: true });
+    if (moved) $('reorderStatus').textContent = `${apps[toIndex].name}, position ${toIndex + 1} of ${apps.length}`;
+}
+
+function setupAppReordering() {
+    appSortable = new Sortable(appsGrid, {
+        disabled: true,
+        draggable: '.app-item',
+        handle: '.reorder-handle',
+        animation: matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 150,
+        forceFallback: true,
+        fallbackTolerance: 5,
+        ghostClass: 'is-drag-placeholder',
+        chosenClass: 'is-drag-chosen',
+        onEnd: ({ oldDraggableIndex, newDraggableIndex }) => finishAppMove(oldDraggableIndex, newDraggableIndex)
+    });
+    $('reorderBtn').addEventListener('click', () => setReorderMode(!isReordering));
+    appsGrid.addEventListener('keydown', (event) => {
+        const handle = event.target.closest('.reorder-handle');
+        if (!isReordering || !handle) return;
+        const items = [...appsGrid.children];
+        const fromIndex = items.indexOf(handle.closest('.app-item'));
+        const columns = appsGrid.classList.contains('is-list') ? 1
+            : items.filter((item) => item.offsetTop === items[0].offsetTop).length;
+        const destinations = {
+            ArrowLeft: fromIndex - 1, ArrowRight: fromIndex + 1,
+            ArrowUp: fromIndex - columns, ArrowDown: fromIndex + columns,
+            Home: 0, End: apps.length - 1
+        };
+        if (!(event.key in destinations)) return;
+        event.preventDefault();
+        finishAppMove(fromIndex, Math.max(0, Math.min(apps.length - 1, destinations[event.key])));
+        document.activeElement.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    });
+}
+
 /* --------------------------------------------------------------- sheets --- */
 
 function openSheet(el) {
+    if (isReordering) setReorderMode(false);
     if (overlays.includes(el)) return;
     el.hidden = false;
     el.classList.remove('is-closing');
@@ -270,6 +354,7 @@ function dismissOverlay(el) {
 function setupEventListeners() {
     appsGrid.addEventListener('click', handleGridClick);
     setupLongPress();
+    setupAppReordering();
 
     $('layoutBtn').addEventListener('click', toggleLayout);
 
@@ -328,6 +413,11 @@ function setupEventListeners() {
 
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
+            if (isReordering) {
+                setReorderMode(false);
+                $('reorderBtn').focus();
+                return;
+            }
             closeSheet(overlays[overlays.length - 1]);
         }
     });
@@ -364,6 +454,7 @@ function addRipple(e) {
 /* ------------------------------------------------------------ tile input --- */
 
 function handleGridClick(e) {
+    if (isReordering) return;
     const editTrigger = e.target.closest('[data-edit]');
     if (editTrigger) {
         e.preventDefault();
@@ -389,6 +480,7 @@ function setupLongPress() {
     };
 
     appsGrid.addEventListener('pointerdown', (e) => {
+        if (isReordering) return;
         const tile = e.target.closest('.app-tile');
         if (!tile || e.target.closest('[data-edit]')) return;
 

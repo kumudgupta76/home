@@ -275,7 +275,8 @@ The Service Worker uses a **versioned, cache-first app shell**:
 4. Serve the launcher offline, including start URLs with query parameters. Do not intercept unrelated URLs, APIs, or embedded apps.
 
 Increment `CACHE_VERSION` in `sw.js` for every release that changes HTML, CSS,
-JavaScript, bundled data, the manifest, or icons. Deploy these files together.
+JavaScript, bundled data, the manifest, or icons. Keep the `appVersion` label and
+its accessible name in `index.html` in sync with this version. Deploy these files together.
 The legacy shared `dock-v1` cache is no longer read and is left untouched to avoid
 deleting data belonging to other apps on the same origin.
 
@@ -288,7 +289,7 @@ in `js/vendor`. The script is precached with the shell so reordering works offli
 
 ```javascript
 // Cache version - increment to force update
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 
 // Cached assets
 const STATIC_ASSETS = [

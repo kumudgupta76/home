@@ -21,6 +21,7 @@ let importMode = 'merge';
 let lastDeleted = null;
 let snackbarTimer = null;
 let iconTarget = null;
+let viewerControlsTimer = null;
 
 // DOM
 const $ = (id) => document.getElementById(id);
@@ -248,6 +249,7 @@ function closeSheet(el) {
 
 function dismissOverlay(el) {
     if (el.classList.contains('app-viewer')) {
+        clearTimeout(viewerControlsTimer);
         el.hidden = true;
         $('appFrame').src = 'about:blank';
     } else {
@@ -309,7 +311,13 @@ function setupEventListeners() {
         el.addEventListener('click', () => closeSheet(el.closest('.sheet-container')));
     });
 
-    $('backBtn').addEventListener('click', closeAppViewer);
+    $('homeBtn').addEventListener('click', closeAppViewer);
+    $('showViewerControlsBtn').addEventListener('click', () => {
+        showViewerControls();
+        $('homeBtn').focus({ preventScroll: true });
+    });
+    $('viewerControls').addEventListener('pointerdown', showViewerControls);
+    $('viewerControls').addEventListener('focusin', showViewerControls);
 
     window.addEventListener('popstate', () => {
         const top = overlays[overlays.length - 1];
@@ -813,10 +821,26 @@ function openAppViewer(url, name) {
     $('openExternalBtn').href = url;
     $('appFrame').src = url;
     openSheet(viewer);
+    showViewerControls();
+}
+
+function showViewerControls() {
+    clearTimeout(viewerControlsTimer);
+    const controls = $('viewerControls');
+    const revealButton = $('showViewerControlsBtn');
+    controls.hidden = false;
+    revealButton.hidden = true;
+    viewerControlsTimer = setTimeout(() => {
+        const restoreFocus = controls.contains(document.activeElement);
+        controls.hidden = true;
+        revealButton.hidden = false;
+        if (restoreFocus) revealButton.focus({ preventScroll: true });
+    }, 2000);
 }
 
 function closeAppViewer() {
-    closeSheet($('appViewer'));
+    dismissOverlay($('appViewer'));
+    if (overlays.length === 0) history.replaceState(null, '');
 }
 
 /* ------------------------------------------------------------ pwa plumbing --- */

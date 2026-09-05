@@ -269,16 +269,19 @@
 
     <!-- App Viewer -->
     <div id="appViewer" class="app-viewer" hidden>
-        <div class="viewer-header">
-            <button id="backBtn" class="icon-button" aria-label="Back">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9.55 18-6-6 6-6L11 7.45 6.45 12 11 16.55Z"/></svg>
+        <iframe id="appFrame" class="app-frame" title="App content" sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals allow-downloads"></iframe>
+        <button id="showViewerControlsBtn" class="icon-button viewer-reveal" aria-label="Show viewer controls" title="Show viewer controls" aria-controls="viewerControls" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7.4 15.4 4.6-4.6 4.6 4.6L18 14l-6-6-6 6Z"/></svg>
+        </button>
+        <div id="viewerControls" class="viewer-header">
+            <button id="homeBtn" class="icon-button" aria-label="Home - view all apps" title="Home - view all apps">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 20v-6h4v6h5v-9h3L12 2 2 11h3v9Z"/></svg>
             </button>
             <span id="viewerTitle" class="viewer-title">App</span>
             <a id="openExternalBtn" class="icon-button" href="#" target="_blank" rel="noopener noreferrer" title="Open in browser" aria-label="Open in browser">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21q-.825 0-1.412-.587Q3 19.825 3 19V5q0-.825.588-1.412Q4.175 3 5 3h7v2H5v14h14v-7h2v7q0 .825-.587 1.413Q19.825 21 19 21Zm4.7-5.3-1.4-1.4L17.6 5H14V3h7v7h-2V6.4Z"/></svg>
             </a>
         </div>
-        <iframe id="appFrame" class="app-frame" title="App content" sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals allow-downloads"></iframe>
     </div>
 
     <!-- Snackbar -->

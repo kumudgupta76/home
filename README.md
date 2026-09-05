@@ -125,7 +125,7 @@ npx serve .
 ### Opening an App
 
 - **Click** on any app tile to open it in the embedded viewer
-- Use the **← Back** button to return to dashboard
+- Use the **Home** button in the bottom toolbar to view all apps
 - Click **↗** to open in external browser
 
 ### Editing/Deleting an App

@@ -1106,6 +1106,7 @@ body.offline .status-dot {
     z-index: 300;
     display: flex;
     flex-direction: column;
+    padding-top: var(--safe-top);
     background: var(--surface);
     animation: viewer-in var(--dur-long) var(--ease-emphasized);
 }
@@ -1121,9 +1122,10 @@ body.offline .status-dot {
 
 .viewer-header {
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     gap: 4px;
-    padding: calc(var(--safe-top) + 6px) 8px 6px;
+    padding: 6px 8px calc(var(--safe-bottom) + 6px);
     background: var(--surface-container);
     color: var(--on-surface);
 }
@@ -1138,8 +1140,25 @@ body.offline .status-dot {
     text-overflow: ellipsis;
 }
 
+.viewer-header[hidden] {
+    display: none;
+}
+
+.viewer-reveal {
+    position: absolute;
+    right: 8px;
+    bottom: calc(var(--safe-bottom) + 6px);
+    background: var(--surface-container);
+    box-shadow: var(--elev-1);
+}
+
+.viewer-reveal:hover {
+    background: var(--surface-container-high);
+}
+
 .app-frame {
     flex: 1;
+    min-height: 0;
     width: 100%;
     border: none;
     background: #fff;

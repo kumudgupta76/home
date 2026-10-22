@@ -1,12 +1,15 @@
 // Service Worker for Dock
 
-const CACHE_VERSION = 'v8';
+importScripts('./js/version.js');
+
+const CACHE_VERSION = self.APP_VERSION;
 const CACHE_PREFIX = `dock-${encodeURIComponent(self.registration.scope)}-`;
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const STATIC_ASSETS = [
     './',
     './index.html',
     './css/styles.css',
+    './js/version.js',
     './js/app.js',
     './js/vendor/sortable-1.15.6.min.js',
     './manifest.json',

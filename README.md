@@ -274,9 +274,10 @@ The Service Worker uses a **versioned, cache-first app shell**:
 3. Activate an update after the user selects Reload or closes all Dock windows. Delete only older caches with this Dock scope's prefix.
 4. Serve the launcher offline, including start URLs with query parameters. Do not intercept unrelated URLs, APIs, or embedded apps.
 
-Increment `CACHE_VERSION` in `sw.js` for every release that changes HTML, CSS,
-JavaScript, bundled data, the manifest, or icons. Keep the `appVersion` label and
-its accessible name in `index.html` in sync with this version. Deploy these files together.
+Increment `APP_VERSION` in `js/version.js` for every release that changes HTML, CSS,
+JavaScript, bundled data, the manifest, or icons. It is the single source of truth:
+`sw.js` loads it via `importScripts` to name its cache, and the page loads it to fill
+the status-bar version label. Deploy these files together.
 The legacy shared `dock-v1` cache is no longer read and is left untouched to avoid
 deleting data belonging to other apps on the same origin.
 
@@ -288,14 +289,15 @@ Drag-and-drop uses locally bundled SortableJS 1.15.6 (MIT), including its licens
 in `js/vendor`. The script is precached with the shell so reordering works offline.
 
 ```javascript
-// Cache version - increment to force update
-const CACHE_VERSION = 'v6';
+// Cache version comes from js/version.js - bump APP_VERSION there to force update
+importScripts('./js/version.js');
+const CACHE_VERSION = self.APP_VERSION;
 
 // Cached assets
 const STATIC_ASSETS = [
     './', './index.html', './css/styles.css',
-    './js/app.js', './js/vendor/sortable-1.15.6.min.js',
-    './data/apps.json', './manifest.json', './icons/icon.svg',
+    './js/version.js', './js/app.js', './js/vendor/sortable-1.15.6.min.js',
+    './manifest.json', './icons/icon.svg',
     './icons/icon-128.png', './icons/icon-192.png', './icons/icon-512.png'
 ];
 ```

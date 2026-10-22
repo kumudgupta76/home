@@ -57,6 +57,7 @@ async function init() {
     setupInstallPrompt();
     updateConnectionStatus();
     updateDomainStatus();
+    updateVersionStatus();
 
     const refreshNotice = sessionStorage.getItem(REFRESH_NOTICE_KEY);
     if (refreshNotice) {
@@ -1117,6 +1118,13 @@ function setupInstallPrompt() {
 function updateConnectionStatus() {
     connectionStatus.textContent = navigator.onLine ? 'Online' : 'Offline';
     document.body.classList.toggle('offline', !navigator.onLine);
+}
+
+function updateVersionStatus() {
+    const version = self.APP_VERSION || '';
+    const label = $('appVersion');
+    label.textContent = version;
+    label.setAttribute('aria-label', `App version ${version.replace(/^v/, '')}`);
 }
 
 function updateDomainStatus() {

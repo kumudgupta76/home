@@ -1,6 +1,6 @@
 // Service Worker for Dock
 
-const CACHE_VERSION = 'v6';
+const CACHE_VERSION = 'v7';
 const CACHE_PREFIX = `dock-${encodeURIComponent(self.registration.scope)}-`;
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const STATIC_ASSETS = [
@@ -9,7 +9,6 @@ const STATIC_ASSETS = [
     './css/styles.css',
     './js/app.js',
     './js/vendor/sortable-1.15.6.min.js',
-    './data/apps.json',
     './manifest.json',
     './icons/icon.svg',
     './icons/icon-128.png',

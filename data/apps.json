@@ -38,7 +38,9 @@
             "icon": "👥"
         },
         {
-            "name": "tab apps"
-            "url": "https://kumudgupta76.github.io/tab-apps/"
+            "name": "tab apps",
+            "url": "https://kumudgupta76.github.io/tab-apps/",
+            "icon": "📑"
+        }
     ]
 }

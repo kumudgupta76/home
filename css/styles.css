@@ -627,6 +627,39 @@ body.offline .status-dot {
     background: var(--error);
 }
 
+.status-domain {
+    max-width: 50vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* JSON view */
+
+.apps-grid[hidden],
+.json-view[hidden] {
+    display: none;
+}
+
+.json-view {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.json-view-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.json-output {
+    max-height: 70vh;
+    overflow: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    user-select: text;
+}
+
 /* --------------------------------------------------------------------------
    FAB
    -------------------------------------------------------------------------- */

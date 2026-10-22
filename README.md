@@ -26,8 +26,8 @@ A Progressive Web App (PWA) that serves as a personal home page and launcher for
 |---------|-------------|
 | 📱 **Installable** | Install as a standalone app on Windows, macOS, Android, iOS |
 | 🔌 **Offline Support** | Works without internet using Service Worker caching |
-| ⬛ **Layouts** | Switch between a launcher grid and a horizontal list |
-| **Reorder Apps** | Drag with mouse or touch, or use the keyboard; both layouts share your saved order |
+| ⬛ **Layouts** | Cycle between a launcher grid, a horizontal list, and a read-only JSON view (with copy) |
+| **Reorder Apps** | Drag with mouse or touch, or use the keyboard; grid and list layouts share your saved order |
 | ➕ **Add Apps** | Add any web app with a name, URL and icon |
 | 🎨 **Icon Picker** | Search the web for an icon, pick an emoji, or upload one — saved locally |
 | 📄 **JSON Import/Export** | Bulk-add apps from `data/apps.json` or any JSON file |
@@ -289,7 +289,7 @@ in `js/vendor`. The script is precached with the shell so reordering works offli
 
 ```javascript
 // Cache version - increment to force update
-const CACHE_VERSION = 'v5';
+const CACHE_VERSION = 'v6';
 
 // Cached assets
 const STATIC_ASSETS = [

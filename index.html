@@ -32,7 +32,7 @@
                     <p class="top-bar-subtitle" id="topBarSubtitle">Tap to open · long-press to edit</p>
                 </div>
                 <div class="top-bar-actions">
-                    <button id="layoutBtn" class="icon-button" aria-label="Switch to list layout" title="Switch layout">
+                    <button id="layoutBtn" class="icon-button" aria-label="Switch to list view" title="Switch to list view">
                         <svg id="layoutIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6V4h18v2Zm0 5V9h18v2Zm0 5v-2h18v2Zm0 5v-2h18v2Z"/></svg>
                     </button>
                     <button id="installBtn" class="icon-button" hidden aria-label="Install app" title="Install app">
@@ -57,6 +57,13 @@
             <div id="appsGrid" class="apps-grid" role="list"></div>
             <p id="reorderStatus" class="visually-hidden" role="status" aria-live="polite"></p>
 
+            <div id="jsonView" class="json-view" hidden>
+                <div class="json-view-actions">
+                    <button type="button" id="copyJsonBtn" class="btn btn-tonal">Copy JSON</button>
+                </div>
+                <pre id="jsonOutput" class="code-sample json-output" tabindex="0" aria-label="Apps as JSON"></pre>
+            </div>
+
             <div id="emptyState" class="empty-state" hidden>
                 <div class="empty-state-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24"><path d="M4 8V4h4v4Zm6 0V4h4v4Zm6 0V4h4v4ZM4 14v-4h4v4Zm6 0v-4h4v4Zm6 0v-4h4v4ZM4 20v-4h4v4Zm6 0v-4h4v4Zm6 0v-4h4v4Z"/></svg>
@@ -71,7 +78,9 @@
             <span class="status-dot" id="statusDot" aria-hidden="true"></span>
             <span id="connectionStatus">Online</span>
             <span aria-hidden="true">&middot;</span>
-            <span id="appVersion" aria-label="App version 5">v5</span>
+            <span id="appDomain" class="status-domain" title="Current domain"></span>
+            <span aria-hidden="true">&middot;</span>
+            <span id="appVersion" aria-label="App version 6">v6</span>
         </div>
     </div>
 

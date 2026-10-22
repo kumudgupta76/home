@@ -24,6 +24,7 @@ let iconTarget = null;
 let viewerControlsTimer = null;
 let isReordering = false;
 let appSortable = null;
+let currentLayout = 'grid';
 
 // DOM
 const $ = (id) => document.getElementById(id);
@@ -54,6 +55,7 @@ async function init() {
     registerServiceWorker();
     setupInstallPrompt();
     updateConnectionStatus();
+    updateDomainStatus();
 }
 
 /* ---------------------------------------------------------------- data --- */
@@ -177,17 +179,30 @@ function escapeHtml(text) {
 /* -------------------------------------------------------------- render --- */
 
 function renderApps() {
+    const isJson = currentLayout === 'json';
     appCount.textContent = apps.length;
-    $('reorderBtn').disabled = apps.length < 2 && !isReordering;
+    $('reorderBtn').disabled = isJson || (apps.length < 2 && !isReordering);
 
     if (apps.length === 0) {
         appsGrid.innerHTML = '';
+        $('jsonView').hidden = true;
         emptyState.hidden = false;
         return;
     }
 
     emptyState.hidden = true;
-    appsGrid.innerHTML = apps.map(createAppTile).join('');
+    appsGrid.hidden = isJson;
+    $('jsonView').hidden = !isJson;
+    if (isJson) {
+        appsGrid.innerHTML = '';
+        $('jsonOutput').textContent = getAppsJson();
+    } else {
+        appsGrid.innerHTML = apps.map(createAppTile).join('');
+    }
+}
+
+function getAppsJson() {
+    return JSON.stringify({ version: 1, apps }, null, 2);
 }
 
 function createAppTile(app, index) {
@@ -222,20 +237,59 @@ function createAppTile(app, index) {
     `;
 }
 
+const LAYOUTS = {
+    grid: {
+        label: 'grid view',
+        icon: '<path d="M4 8V4h4v4Zm6 0V4h4v4Zm6 0V4h4v4ZM4 14v-4h4v4Zm6 0v-4h4v4Zm6 0v-4h4v4ZM4 20v-4h4v4Zm6 0v-4h4v4Zm6 0v-4h4v4Z"/>'
+    },
+    list: {
+        label: 'list view',
+        icon: '<path d="M3 6V4h18v2Zm0 5V9h18v2Zm0 5v-2h18v2Zm0 5v-2h18v2Z"/>'
+    },
+    json: {
+        label: 'JSON view',
+        icon: '<path d="M14 20v-2h3q.425 0 .713-.288Q18 17.425 18 17v-2q0-.95.55-1.725.55-.775 1.45-1.1v-.35q-.9-.325-1.45-1.1Q18 9.95 18 9V7q0-.425-.287-.713Q17.425 6 17 6h-3V4h3q1.25 0 2.125.875T20 7v2q0 .425.288.712.287.288.712.288h1v4h-1q-.425 0-.712.287Q20 14.575 20 15v2q0 1.25-.875 2.125T17 20Zm-7 0q-1.25 0-2.125-.875T4 17v-2q0-.425-.287-.713Q3.425 14 3 14H2v-4h1q.425 0 .713-.288Q4 9.425 4 9V7q0-1.25.875-2.125T7 4h3v2H7q-.425 0-.713.287Q6 6.575 6 7v2q0 .95-.55 1.725-.55.775-1.45 1.1v.35q.9.325 1.45 1.1Q6 14.05 6 15v2q0 .425.287.712Q6.575 18 7 18h3v2Z"/>'
+    }
+};
+const LAYOUT_ORDER = ['grid', 'list', 'json'];
+
 function applyLayout(layout) {
-    const isList = layout === 'list';
-    appsGrid.classList.toggle('is-list', isList);
+    if (!LAYOUTS[layout]) layout = 'grid';
+    if (layout === 'json' && isReordering) setReorderMode(false);
+    currentLayout = layout;
+    appsGrid.classList.toggle('is-list', layout === 'list');
     localStorage.setItem(LAYOUT_KEY, layout);
 
+    // The button advertises the mode it will switch to next.
+    const next = LAYOUTS[nextLayout()];
     const button = $('layoutBtn');
-    button.setAttribute('aria-label', isList ? 'Switch to grid layout' : 'Switch to list layout');
-    $('layoutIcon').innerHTML = isList
-        ? '<path d="M4 8V4h4v4Zm6 0V4h4v4Zm6 0V4h4v4ZM4 14v-4h4v4Zm6 0v-4h4v4Zm6 0v-4h4v4ZM4 20v-4h4v4Zm6 0v-4h4v4Zm6 0v-4h4v4Z"/>'
-        : '<path d="M3 6V4h18v2Zm0 5V9h18v2Zm0 5v-2h18v2Zm0 5v-2h18v2Z"/>';
+    button.setAttribute('aria-label', `Switch to ${next.label}`);
+    button.title = `Switch to ${next.label}`;
+    $('layoutIcon').innerHTML = next.icon;
+}
+
+function nextLayout() {
+    return LAYOUT_ORDER[(LAYOUT_ORDER.indexOf(currentLayout) + 1) % LAYOUT_ORDER.length];
 }
 
 function toggleLayout() {
-    applyLayout(appsGrid.classList.contains('is-list') ? 'grid' : 'list');
+    applyLayout(nextLayout());
+    renderApps();
+}
+
+async function copyAppsJson() {
+    const text = getAppsJson();
+    try {
+        await navigator.clipboard.writeText(text);
+        showSnackbar('JSON copied');
+    } catch {
+        const range = document.createRange();
+        range.selectNodeContents($('jsonOutput'));
+        const selection = getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        showSnackbar('Press Ctrl+C to copy');
+    }
 }
 
 function buildEmojiGrid() {
@@ -357,6 +411,7 @@ function setupEventListeners() {
     setupAppReordering();
 
     $('layoutBtn').addEventListener('click', toggleLayout);
+    $('copyJsonBtn').addEventListener('click', copyAppsJson);
 
     fab.addEventListener('click', openAddSheet);
     $('closeModalBtn').addEventListener('click', () => closeSheet(addSheet));
@@ -1015,6 +1070,10 @@ function setupInstallPrompt() {
 function updateConnectionStatus() {
     connectionStatus.textContent = navigator.onLine ? 'Online' : 'Offline';
     document.body.classList.toggle('offline', !navigator.onLine);
+}
+
+function updateDomainStatus() {
+    $('appDomain').textContent = location.host || (location.protocol === 'file:' ? 'local file' : location.protocol);
 }
 
 if (document.readyState === 'loading') {

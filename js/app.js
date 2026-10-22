@@ -308,7 +308,7 @@ function setReorderMode(enabled) {
     button.title = enabled ? 'Done reordering' : 'Reorder apps';
     $('reorderIcon').innerHTML = enabled
         ? '<path d="m9 16.2-4.2-4.2L3.4 13.4 9 19 21 7l-1.4-1.4Z"/>'
-        : '<path d="m7 3-4 4h3v10H3l4 4 4-4H8V7h3ZM13 5h8v2h-8Zm0 6h8v2h-8Zm0 6h8v2h-8Z"/>';
+        : '<path d="M8 13V5.825L5.425 8.4 4 7l5-5 5 5-1.425 1.4L10 5.825V13Zm7 9-5-5 1.425-1.4L14 18.175V11h2v7.175l2.575-2.575L20 17Z"/>';
     $('reorderStatus').textContent = enabled ? 'Reorder mode on' : 'Reorder mode off';
     renderApps();
 }

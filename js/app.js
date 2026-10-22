@@ -3,6 +3,7 @@
 const STORAGE_KEY = 'pwa-home-apps';
 const THEME_KEY = 'pwa-home-theme';
 const LAYOUT_KEY = 'pwa-home-layout';
+const REFRESH_NOTICE_KEY = 'pwa-home-refresh-notice';
 const APPS_SOURCE = './data/apps.json';
 
 const EMOJI_CHOICES = [
@@ -56,6 +57,12 @@ async function init() {
     setupInstallPrompt();
     updateConnectionStatus();
     updateDomainStatus();
+
+    const refreshNotice = sessionStorage.getItem(REFRESH_NOTICE_KEY);
+    if (refreshNotice) {
+        sessionStorage.removeItem(REFRESH_NOTICE_KEY);
+        showSnackbar(refreshNotice);
+    }
 }
 
 /* ---------------------------------------------------------------- data --- */
@@ -427,7 +434,7 @@ function setupEventListeners() {
     $('menuImportBtn').addEventListener('click', () => switchSheet(menuSheet, importSheet));
     $('menuExportBtn').addEventListener('click', handleExport);
     $('menuThemeBtn').addEventListener('click', cycleTheme);
-    $('menuResetBtn').addEventListener('click', handleReset);
+    $('menuClearCacheBtn').addEventListener('click', handleClearCache);
 
     $('emptyImportBtn').addEventListener('click', () => openSheet(importSheet));
     $('pickFileBtn').addEventListener('click', () => $('importFileInput').click());
@@ -702,14 +709,54 @@ function handleExport() {
     showSnackbar('apps.json downloaded');
 }
 
-async function handleReset() {
+async function handleClearCache() {
     closeSheet(menuSheet);
-    if (!confirm('Replace your list with the bundled data/apps.json?')) return;
+    if (!navigator.onLine) {
+        showSnackbar('You are offline — try again when online');
+        return;
+    }
 
-    apps = await fetchBundledApps();
+    showSnackbar('Clearing cache…');
+    let freshApps;
+    try {
+        const response = await fetch(APPS_SOURCE, { cache: 'reload' });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        freshApps = sanitizeApps(await response.json());
+    } catch (error) {
+        console.warn('Could not refresh', APPS_SOURCE, error);
+        showSnackbar('Could not load data/apps.json — nothing changed');
+        return;
+    }
+
+    // Merge: keep the current list and edits, append apps whose URL is new.
+    const existing = new Set(apps.map((a) => a.url));
+    const added = freshApps.filter((a) => !existing.has(a.url));
+    apps = apps.concat(added);
     saveApps();
-    renderApps();
-    showSnackbar('Apps restored');
+    sessionStorage.setItem(REFRESH_NOTICE_KEY, added.length > 0
+        ? `Cache cleared · added ${added.length} app${added.length === 1 ? '' : 's'}`
+        : 'Cache cleared · no new apps');
+
+    // Refresh the browser HTTP cache so the reload doesn't pick up stale files.
+    const assets = [location.href.split(/[?#]/)[0],
+        ...[...document.querySelectorAll('link[rel="stylesheet"], link[rel="manifest"], script[src]')]
+            .map((el) => el.href || el.src)];
+    await Promise.allSettled(assets.map((url) => fetch(url, { cache: 'reload' })));
+
+    try {
+        if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(registrations.map((registration) => registration.unregister()));
+        }
+        if ('caches' in window) {
+            const names = await caches.keys();
+            await Promise.all(names.filter((name) => name.startsWith('dock-')).map((name) => caches.delete(name)));
+        }
+    } catch (error) {
+        console.warn('Cache clear failed', error);
+    }
+
+    location.reload();
 }
 
 /* ---------------------------------------------------------------- theme --- */

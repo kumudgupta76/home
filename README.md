@@ -31,6 +31,7 @@ A Progressive Web App (PWA) that serves as a personal home page and launcher for
 | ➕ **Add Apps** | Add any web app with a name, URL and icon |
 | 🎨 **Icon Picker** | Search the web for an icon, pick an emoji, or upload one — saved locally |
 | 📄 **JSON Import/Export** | Bulk-add apps from `data/apps.json` or any JSON file |
+| 🧹 **Clear Cache & Reload** | Menu option that drops cached files, re-registers the service worker, and merges in new apps from the latest `data/apps.json` |
 | 🔄 **Auto-fetch Metadata** | Automatically fetches site title and favicon from URL |
 | ✏️ **Edit & Delete** | Manage your apps easily with edit/delete options |
 | 🖼️ **Embedded Viewer** | Opens apps within the PWA (no browser redirect) |
@@ -78,14 +79,13 @@ For the first upgrade from the older worker, close all Dock windows and reopen.
 1. **Android**: Close app completely, reopen. If still old, uninstall and reinstall.
 2. **iOS**: Close app from app switcher, reopen. May need to delete and re-add to home screen.
 
-### Clear App Data (Reset to Defaults)
+### Clear Cache & Pull New Apps from `data/apps.json`
 
-To clear saved apps and start fresh:
-
-1. Open DevTools (`F12`)
-2. Go to **Application** → **Local Storage**
-3. Delete `pwa-home-apps` key
-4. Refresh the page
+Open the **⋮** menu and choose **Clear cache & reload**. It fetches the latest
+`data/apps.json` (aborting without changes if that fails), merges in any apps whose
+URL isn't already in your list (existing apps and edits are kept), clears cached
+files, re-registers the service worker, and reloads — no need to close the app after
+updating `data/apps.json` or deploying new code.
 
 ---
 
